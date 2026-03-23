@@ -21,7 +21,7 @@
         .checkbox-wrapper input:checked + div { background-color: #1e3a8a; border-color: #1e3a8a; }
         .checkbox-wrapper input:checked + div svg { display: block; }
         .page { display: none; }
-        .active { display: block; }
+        .page.active { display: block; }
         .pill-label { display: inline-flex; align-items: center; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; background-color: #fff7ed; color: #9a3412; font-weight: 600; margin-right: 4px; }
         .pill-label span { margin-left: 4px; }
         .hidden-by-limit { display: none; }
@@ -57,6 +57,12 @@
         #chatSendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
         .quick-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-size: 11px; padding: 5px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
         .quick-btn:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #c7d2fe; }
+
+        /* ===== タブ切り替え ===== */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active-tab { background-color: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#f8fafc]">
@@ -222,45 +228,84 @@
             <input type="hidden" id="filterSeeds" value="true">
             <input type="hidden" id="filterDept" value="">
 
-            <!-- Needs & Seeds ボード -->
+            <!-- ===== Needs & Seeds ボード（タブ切り替え版） ===== -->
             <div class="sp-webpart mt-2">
+
+                <!-- タイトルと投稿ボタン -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 border-b border-slate-200 pb-2 gap-3">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-people-arrows text-indigo-600"></i> Needs &amp; Seeds ボード</h2>
-                        <p class="text-xs text-slate-500 mt-1">左：顧客側の課題（Needs）／右：伊藤忠グループのソリューション（Seeds）</p>
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-people-arrows text-indigo-600"></i> Needs &amp; Seeds ボード
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">顧客側の課題（Needs）と伊藤忠グループのソリューション（Seeds）</p>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-500 text-white hover:bg-orange-600"><i class="fa-solid fa-plus"></i> Needsを投稿</button>
-                        <button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600"><i class="fa-solid fa-plus"></i> Seedsを投稿</button>
+                    <!-- 投稿ボタン：アクティブなタブに合わせて切り替わる -->
+                    <div>
+                        <button id="postNeedsBtn"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-500 text-white hover:bg-orange-600">
+                            <i class="fa-solid fa-plus"></i> Needsを投稿
+                        </button>
+                        <button id="postSeedsBtn"
+                                class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500 text-white hover:bg-blue-600">
+                            <i class="fa-solid fa-plus"></i> Seedsを投稿
+                        </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-[11px] font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-circle-exclamation text-[10px]"></i> Needs（課題）</span>
-                            <span class="text-[11px] text-slate-400">顧客の「困りごと」側</span>
-                        </div>
-                        <div id="needsContainer" class="grid grid-cols-1 gap-3"></div>
-                        <div class="mt-3 flex justify-center gap-2">
-                            <button id="showMoreNeeds" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100"><i class="fa-solid fa-angles-down text-[10px]"></i> Needsをもっと表示する</button>
-                            <button id="collapseNeeds" class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 text-slate-600 bg-white hover:bg-slate-50" onclick="collapseCards('needsContainer', 'showMoreNeeds', 'collapseNeeds')"><i class="fa-solid fa-angles-up text-[10px]"></i> 縮める</button>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-[11px] font-semibold px-2.5 py-1 rounded-full"><i class="fa-solid fa-seedling text-[10px]"></i> Seeds（提供できる価値）</span>
-                            <span class="text-[11px] text-slate-400">伊藤忠グループの「打ち手」側</span>
-                        </div>
-                        <div id="seedsContainer" class="grid grid-cols-1 gap-3"></div>
-                        <div class="mt-3 flex justify-center gap-2">
-                            <button id="showMoreSeeds" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100"><i class="fa-solid fa-angles-down text-[10px]"></i> Seedsをもっと表示する</button>
-                            <button id="collapseSeeds" class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 text-slate-600 bg-white hover:bg-slate-50" onclick="collapseCards('seedsContainer', 'showMoreSeeds', 'collapseSeeds')"><i class="fa-solid fa-angles-up text-[10px]"></i> 縮める</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- STORIESセクションは右カラムに移動済み -->
+                <!-- タブボタン -->
+                <div class="flex gap-1 bg-slate-100 p-1 rounded-xl mb-5 w-fit">
+                    <button id="tabNeeds"
+                            class="tab-btn active-tab flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-orange-700"
+                            onclick="switchTab('needs')">
+                        <i class="fa-solid fa-circle-exclamation text-[12px]"></i>
+                        Needs（課題）
+                        <span id="needsCount" class="bg-orange-100 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+                    </button>
+                    <button id="tabSeeds"
+                            class="tab-btn flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-slate-500 hover:text-blue-700"
+                            onclick="switchTab('seeds')">
+                        <i class="fa-solid fa-seedling text-[12px]"></i>
+                        Seeds（提供できる価値）
+                        <span id="seedsCount" class="bg-blue-100 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+                    </button>
+                </div>
+
+                <!-- Needsパネル（初期表示） -->
+                <div id="panelNeeds" class="tab-panel active">
+                    <p class="text-[11px] text-slate-400 mb-2">顧客の「困りごと」側</p>
+                    <div id="needsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                    <div class="mt-3 flex justify-center gap-2">
+                        <button id="showMoreNeeds"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100">
+                            <i class="fa-solid fa-angles-down text-[10px]"></i> Needsをもっと表示する
+                        </button>
+                        <button id="collapseNeeds"
+                                class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 text-slate-600 bg-white hover:bg-slate-50"
+                                onclick="collapseCards('needsContainer', 'showMoreNeeds', 'collapseNeeds')">
+                            <i class="fa-solid fa-angles-up text-[10px]"></i> 縮める
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Seedsパネル（タブ切り替えで表示） -->
+                <div id="panelSeeds" class="tab-panel">
+                    <p class="text-[11px] text-slate-400 mb-2">伊藤忠グループの「打ち手」側</p>
+                    <div id="seedsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                    <div class="mt-3 flex justify-center gap-2">
+                        <button id="showMoreSeeds"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100">
+                            <i class="fa-solid fa-angles-down text-[10px]"></i> Seedsをもっと表示する
+                        </button>
+                        <button id="collapseSeeds"
+                                class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-300 text-slate-600 bg-white hover:bg-slate-50"
+                                onclick="collapseCards('seedsContainer', 'showMoreSeeds', 'collapseSeeds')">
+                            <i class="fa-solid fa-angles-up text-[10px]"></i> 縮める
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ===== タブここまで ===== -->
 
             <!-- AI アシスタント -->
             <div id="aiChatSection" class="sp-webpart rounded-2xl p-6 md:p-8 mt-6">
@@ -333,12 +378,12 @@
         </div>
     </div>
 
-    <!-- About / 投稿 / Market / Stories ページ（簡略） -->
+    <!-- About / 投稿 / Market / Stories ページ -->
     <div id="aboutPage" class="page"><div class="max-w-4xl mx-auto px-6 py-10"><a href="#" onclick="showPage('topPage'); return false;" class="text-blue-600 text-sm">← ホーム</a><h1 class="text-3xl font-bold text-slate-800 mt-4 mb-4">現場の「気づき」と、全社の「ソリューション」。交われば、提案はもっと強くなる。</h1><p class="text-slate-700">—— このサイトは、「課題を共有し、社内で解決する」ための共創基盤です。</p></div></div>
     <div id="postPage" class="page"><div class="max-w-2xl mx-auto px-6 py-16 text-center"><h1 class="text-2xl font-bold text-slate-800 mb-6">投稿ページ</h1><p class="text-slate-700 mb-8">ここに投稿フォームが表示される想定</p><button onclick="showPage('topPage');" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded">TOPへ戻る</button></div></div>
     <div id="marketPage" class="page"><div class="max-w-2xl mx-auto px-6 py-16 text-center"><h1 class="text-2xl font-bold text-teal-800 mb-6">マーケットインBOXページ</h1><button onclick="showPage('topPage');" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded">TOPへ戻る</button></div></div>
 
-    <!-- STORY 福本 -->
+    <!-- STORY ページ群 -->
     <div id="storyFukumotoPage" class="page">
         <div class="max-w-4xl mx-auto px-6 py-10">
             <a href="#" onclick="showPage('storiesListPage'); return false;" class="text-blue-600 text-sm">← STORIES一覧</a>
@@ -353,7 +398,7 @@
     <div id="storyUnicoPage" class="page"><div class="max-w-4xl mx-auto px-6 py-10"><h1 class="text-2xl font-bold text-slate-900 mb-4">企業向け制服、ユニフォーム協業に関するご提案</h1><p class="text-slate-600 text-sm">※ 作成中</p><div class="mt-8"><button onclick="showPage('topPage');" class="px-4 py-2 rounded-full border border-slate-200 text-sm text-slate-500">TOPへ戻る</button></div></div></div>
     <div id="storyPowerPage" class="page"><div class="max-w-4xl mx-auto px-6 py-10"><h1 class="text-2xl font-bold text-slate-900 mb-4">他部署連携による電力提案の取り組みについて</h1><p class="text-slate-600 text-sm">※ 作成中</p><div class="mt-8"><button onclick="showPage('topPage');" class="px-4 py-2 rounded-full border border-slate-200 text-sm text-slate-500">TOPへ戻る</button></div></div></div>
 
-    <!-- モーダル（コメント機能付き） -->
+    <!-- モーダル -->
     <div id="modalOverlay" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" onclick="closeModal(event)">
         <div class="modal-content bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col relative" onclick="event.stopPropagation()">
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
@@ -390,13 +435,42 @@
         const target = document.getElementById(pageId);
         if(target) { target.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
     }
+
+    // ========== タブ切り替え ==========
+    function switchTab(tab) {
+        const isNeeds = (tab === 'needs');
+
+        // ① パネルの表示・非表示を切り替える
+        document.getElementById('panelNeeds').classList.toggle('active', isNeeds);
+        document.getElementById('panelSeeds').classList.toggle('active', !isNeeds);
+
+        // ② タブボタンのデザインを切り替える
+        const tabNeeds = document.getElementById('tabNeeds');
+        const tabSeeds = document.getElementById('tabSeeds');
+
+        if (isNeeds) {
+            tabNeeds.classList.add('active-tab', 'text-orange-700');
+            tabNeeds.classList.remove('text-slate-500');
+            tabSeeds.classList.remove('active-tab', 'text-blue-700');
+            tabSeeds.classList.add('text-slate-500');
+        } else {
+            tabSeeds.classList.add('active-tab', 'text-blue-700');
+            tabSeeds.classList.remove('text-slate-500');
+            tabNeeds.classList.remove('active-tab', 'text-orange-700');
+            tabNeeds.classList.add('text-slate-500');
+        }
+
+        // ③ 投稿ボタンを切り替える
+        document.getElementById('postNeedsBtn').classList.toggle('hidden', !isNeeds);
+        document.getElementById('postSeedsBtn').classList.toggle('hidden', isNeeds);
+    }
+
+    // ========== 縮める ==========
     function collapseCards(containerId, showMoreBtnId, collapseBtnId) {
         const container = document.getElementById(containerId);
         const LIMIT = 3;
         container.querySelectorAll('.ns-card').forEach((card, i) => {
-            if(i >= LIMIT) {
-                card.classList.add('hidden-by-limit', 'hidden');
-            }
+            if(i >= LIMIT) { card.classList.add('hidden-by-limit', 'hidden'); }
         });
         document.getElementById(showMoreBtnId).classList.remove('hidden');
         document.getElementById(collapseBtnId).classList.add('hidden');
@@ -404,10 +478,7 @@
 
     function applyFilters() {
         const keyword = (document.getElementById('filterKeyword')?.value || '').toLowerCase();
-        const needsOn = true;
-        const seedsOn = true;
         document.querySelectorAll('.ns-card').forEach(card => {
-            const type = card.getAttribute('data-type');
             const text = (card.getAttribute('data-text') || '').toLowerCase();
             const tags = (card.getAttribute('data-tags') || '').toLowerCase();
             let visible = true;
@@ -502,10 +573,8 @@
             if(btn) {
                 if(cards.length <= LIMIT) btn.classList.add('hidden');
                 else btn.addEventListener('click', () => {
-                    const hiddenCards = container.querySelectorAll('.ns-card.hidden-by-limit');
-                    hiddenCards.forEach(c => { c.classList.remove('hidden-by-limit','hidden'); });
+                    container.querySelectorAll('.ns-card.hidden-by-limit').forEach(c => { c.classList.remove('hidden-by-limit','hidden'); });
                     btn.classList.add('hidden');
-                    // 「縮める」ボタンを表示
                     const collapseBtn = document.getElementById(btnId.replace('showMore', 'collapse'));
                     if(collapseBtn) collapseBtn.classList.remove('hidden');
                 });
@@ -530,7 +599,14 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', () => { applyFilters(); applyListLimit(); buildTrendingTags(); });
+    document.addEventListener('DOMContentLoaded', () => {
+        applyFilters();
+        applyListLimit();
+        buildTrendingTags();
+        // 件数バッジを表示
+        document.getElementById('needsCount').textContent = needsItems.length;
+        document.getElementById('seedsCount').textContent = seedsItems.length;
+    });
 
     // ========== モーダル（コメント機能付き） ==========
     function openModal(id) {
@@ -568,19 +644,13 @@
                     <pre class="whitespace-pre-wrap text-sm text-slate-800 font-sans">${(item.detail||'').trim()}</pre>
                 </div>
                 ${storyHtml}
-
-                <!-- コメントセクション -->
                 <div class="mt-6 border-t border-slate-200 pt-5">
                     <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
                         <i class="fa-regular fa-comments text-slate-500"></i> ディスカッション
                     </h3>
-
-                    <!-- コメント一覧 -->
                     <div id="commentList" class="mb-4 space-y-1 max-h-48 overflow-y-auto">
                         <p class="text-xs text-slate-400 text-center py-4">読み込み中...</p>
                     </div>
-
-                    <!-- コメント入力フォーム -->
                     <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                         <div class="mb-3">
                             <input type="text" id="commentAuthor" placeholder="お名前（例：食品流通 山田）"
@@ -699,7 +769,6 @@
     }
 
     function sendQuickQuestion(btn) { document.getElementById('chatInput').value = btn.textContent; sendChatMessage(); }
-
     function addUserMessage(text) {
         const chat = document.getElementById('chatWindow');
         chat.insertAdjacentHTML('beforeend', `<div class="msg-user"><div class="bubble">${escapeHtml(text).replace(/\n/g,'<br>')}</div></div>`);
